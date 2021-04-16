@@ -87,7 +87,9 @@ void utimer_service(struct uloop_timeout *utimer)
 {
 	struct prog_context *prog = container_of(utimer, struct prog_context, utimer);
 	// inform LWS that a second has passed
-	lws_service_fd(prog->lws_ctx, NULL);
+	//lws_service_fd(prog->lws_ctx, NULL);
+    lws_service(prog->lws_ctx, 1);
+
 	uloop_timeout_set(utimer, 1000);
 }
 
@@ -273,7 +275,7 @@ int main(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
-	lws_set_log_level(-1, NULL);
+    lws_set_log_level(255, NULL);
 
 	if (!install_handler(SIGCHLD, sigchld_handler))
 		goto error;
@@ -320,7 +322,7 @@ int main(int argc, char *argv[])
 	lws_info.user = &global;
     lws_info.options = LWS_SERVER_OPTION_EXPLICIT_VHOSTS;
 	lws_info.server_string = "owsd";
-	lws_info.ws_ping_pong_interval = 300;
+	//lws_info.ws_ping_pong_interval = 300;
 
 	lwsl_debug("Creating lwsl context\n");
 
@@ -346,7 +348,7 @@ int main(int argc, char *argv[])
 	static struct lws_http_mount wwwmount = {
 		NULL,
 		"/",
-		"/dev/null",   // anything not-a-dir is ok, so our HTTP code runs and not lws
+		"/www",   // anything not-a-dir is ok, so our HTTP code runs and not lws
 		"index.html"
 	};
 	wwwmount.cache_reusable = !!www_maxage;
@@ -403,6 +405,7 @@ int main(int argc, char *argv[])
 		c->vh_info.mounts = &cgimount;
 
         lwsl_debug("create vhost for port %d\n", c->vh_info.port);
+        fprintf(stderr, "create vhost for port %d\n", c->vh_info.port);
 
 		struct lws_vhost *vh = lws_create_vhost(lws_ctx, &c->vh_info);
 
@@ -420,7 +423,7 @@ int main(int argc, char *argv[])
 
 	global.utimer.cb = utimer_service;
 	uloop_timeout_add(&global.utimer);
-	uloop_timeout_set(&global.utimer, 1000);
+	uloop_timeout_set(&global.utimer, 10);
 
 	lwsl_info("running uloop...\n");
 	uloop_run();
