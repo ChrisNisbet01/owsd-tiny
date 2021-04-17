@@ -337,7 +337,7 @@ int main(int argc, char *argv[])
 	static struct lws_http_mount wwwmount = {
 		NULL,
 		"/",
-		"/www",   // anything not-a-dir is ok, so our HTTP code runs and not lws
+		"/dev/null",   // anything not-a-dir is ok, so our HTTP code runs and not lws
 		"index.html"
 	};
 	wwwmount.cache_reusable = !!www_maxage;
