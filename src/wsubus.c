@@ -69,7 +69,14 @@ static bool origin_allowed(struct list_head *origin_list, char *origin)
 {
 	struct str_list *str;
 
-	list_for_each_entry(str, origin_list, list) {
+	/* If the origin list is empty, assume that the user has no restrictions. */
+	if (list_empty(origin_list))
+	{
+		return true;
+	}
+
+	list_for_each_entry(str, origin_list, list)
+	{
 		// According to RFC4343, DNS names are "case insensitive".
 		// Further, browsers generally send domain names converted
 		// to lowercase letters. Thus match origin case-insensitively.
