@@ -33,7 +33,7 @@
 #include <sys/resource.h>
 
 #ifndef WSD_DEF_UBUS_PATH
-#define WSD_DEF_UBUS_PATH "/var/run/ubus.sock"
+#define WSD_DEF_UBUS_PATH "/var/run/ubus/ubus.sock"
 #endif
 
 #ifndef WSD_DEF_WWW_PATH
