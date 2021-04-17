@@ -323,10 +323,10 @@ int main(int argc, char *argv[])
 	// libwebsockets-level, so we can run our own HTTP serving with tweaks
 	// TODO consider getting rid of our tweaks in favor of using lws ...
 	static struct lws_http_mount wwwmount = {
-		NULL,
-		"/",
-		"/dev/null",   // anything not-a-dir is ok, so our HTTP code runs and not lws
-		"index.html"
+		.mount_next = NULL,
+		.mountpoint = "/",
+		.origin = "/dev/null",   // anything not-a-dir is ok, so our HTTP code runs and not lws
+		.def = "index.html"
 	};
 	wwwmount.cache_reusable = !!www_maxage;
 	wwwmount.cache_revalidate = !!www_maxage;
