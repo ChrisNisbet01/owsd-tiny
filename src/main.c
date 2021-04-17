@@ -83,16 +83,6 @@ static void usage(char *name)
 			"\n", name);
 }
 
-void utimer_service(struct uloop_timeout *utimer)
-{
-	struct prog_context *prog = container_of(utimer, struct prog_context, utimer);
-	// inform LWS that a second has passed
-	//lws_service_fd(prog->lws_ctx, NULL);
-    lws_service(prog->lws_ctx, 1);
-
-	uloop_timeout_set(utimer, 1000);
-}
-
 static void sigchld_handler(int signo)
 {
 	return;
@@ -419,10 +409,6 @@ int main(int argc, char *argv[])
 		// we allocate a pointer and point to per-vhost storage
 		*pvh_context = &c->vh_ctx;
 	}
-
-	global.utimer.cb = utimer_service;
-	uloop_timeout_add(&global.utimer);
-	uloop_timeout_set(&global.utimer, 10);
 
 	lwsl_info("running uloop...\n");
 	uloop_run();
