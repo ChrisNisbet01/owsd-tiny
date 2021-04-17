@@ -62,7 +62,6 @@ static void usage(char *name)
 			"  -w <www_path>    HTTP resources path [" WSD_DEF_WWW_PATH "]\n"
 			"  -t <www_maxage>  enable HTTP caching with specified max_age in seconds\n"
 			"  -r <from>:<to>   HTTP path redirect pair\n"
-			"  -m <from>:<to>   CGI mount point\n"
 			"\n"
 			"  -p <port> ...    port number (repeat for multiple):\n"
 			" per-port options (apply to last port (-p))\n"
@@ -132,8 +131,6 @@ int main(int argc, char *argv[])
 	int www_maxage = WSD_DEF_WWW_MAXAGE;
 	char *redir_from = NULL;
 	char *redir_to = NULL;
-	char *cgi_from = NULL;
-	char *cgi_to = NULL;
 
 	struct vhinfo_list *currvh = NULL;
 
@@ -174,15 +171,6 @@ int main(int argc, char *argv[])
 			}
 			*redir_to++ = '\0';
 			redir_from = optarg;
-			break;
-		case 'm':
-			cgi_to = strchr(optarg, ':');
-			if (!cgi_to) {
-				lwsl_err("invalid cgi origin specified");
-				goto error;
-			}
-			*cgi_to++ = '\0';
-			cgi_from = optarg;
 			break;
 
 			// client
@@ -346,52 +334,11 @@ int main(int argc, char *argv[])
 	wwwmount.mountpoint_len = strlen(wwwmount.mountpoint);
 	wwwmount.origin_protocol = LWSMPRO_FILE;
 
-  // cgi environment variables
-  const static struct lws_protocol_vhost_options cgienv4 = {
-    .name = "PATH",
-    .value = "/bin:/usr/bin:/usr/local/bin:/usr/sbin:/sbin:/var/www/cgi-bin",
-  };
-
-  const static struct lws_protocol_vhost_options cgienv3 = {
-    .next = &cgienv4,
-    .name = "SCRIPT_NAME",
-    .value = "/cgi-bin/luci",
-  };
-
-  const static struct lws_protocol_vhost_options cgienv2 = {
-    .next = &cgienv3,
-    .name = "SCRIPT_FILENAME",
-    .value = "/www/cgi-bin/luci",
-  };
-
-  const static struct lws_protocol_vhost_options cgienv1 = {
-    .next = &cgienv2,
-    .name = "DOCUMENT_ROOT",
-    .value = "/www",
-  };
-
-	// create mount for the CGI
-	static struct lws_http_mount cgimount = {
-		.mount_next = &wwwmount,
-		.mountpoint = "/cgi-bin/luci",
-		.origin = "/www/cgi-bin/luci",
-		.cgienv = &cgienv1,
-		.cgi_timeout = 5000,
-		.origin_protocol = LWSMPRO_CGI,
-	};
-	cgimount.mountpoint_len = strlen(cgimount.mountpoint);
-
-	if (cgi_from && cgi_to) {
-		cgimount.mountpoint = cgi_from;
-		cgimount.mountpoint_len = strlen(cgimount.mountpoint);
-		cgimount.origin = cgi_to;
-	}
-
 	// create all listening vhosts
 	for (struct vhinfo_list *c = currvh; c; c = c->next) {
 		c->vh_info.protocols = ws_protocols;
 
-		c->vh_info.mounts = &cgimount;
+		c->vh_info.mounts = &wwwmount;
 
         lwsl_debug("create vhost for port %d\n", c->vh_info.port);
         fprintf(stderr, "create vhost for port %d\n", c->vh_info.port);
