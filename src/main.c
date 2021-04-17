@@ -322,7 +322,6 @@ int main(int argc, char *argv[])
 	lws_info.user = &global;
     lws_info.options = LWS_SERVER_OPTION_EXPLICIT_VHOSTS;
 	lws_info.server_string = "owsd";
-	//lws_info.ws_ping_pong_interval = 300;
 
 	lwsl_debug("Creating lwsl context\n");
 
